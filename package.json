@@ -6,7 +6,7 @@
     "dev": "bun --env-file=.env.dev next dev -p 9999",
     "dev:uat": "bun --env-file=.env.uat next dev -p 9999",
     "dev:prod": "bun --env-file=.env.prod next dev -p 9999",
-    "build": "bun --env-file=.env.production next build",
+    "build": "bun --env-file=.env.prod next build",
     "build:dev": "bun --env-file=.env.dev next build",
     "build:uat": "bun --env-file=.env.uat next build",
     "build:prod": "bun --env-file=.env.prod next build",
