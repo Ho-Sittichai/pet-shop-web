@@ -5,7 +5,7 @@ import { Pet } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { ShieldCheck, Heart } from 'lucide-react';
+import { ShieldCheck, Heart, PawPrint } from 'lucide-react';
 
 interface PetDetailProps {
   pet: Pet | null;
@@ -44,14 +44,18 @@ export const PetDetailModal: React.FC<PetDetailProps> = ({
       <div className="space-y-5">
         {/* Photo and Header */}
         <div className="relative h-64 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-          <img
-            src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-            alt={pet.name}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-            }}
-            className="w-full h-full object-cover object-center"
-          />
+          {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+            <img
+              src={pet.imageUrl}
+              alt={pet.name}
+              className="w-full h-full object-cover object-center"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-2 select-none">
+              <PawPrint className="w-14 h-14 text-slate-300 stroke-[1.5]" />
+              <span className="text-xs font-medium text-slate-400">No Image Provided</span>
+            </div>
+          )}
           <div className="absolute top-3 left-3 flex gap-2">
             <Badge variant={getStatusVariant(pet.status)}>{pet.status}</Badge>
             <Badge variant="slate">{pet.categoryName}</Badge>

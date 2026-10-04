@@ -442,11 +442,17 @@ export default function MasterPage() {
                   {pets.map((pet) => (
                     <tr key={pet.id} className="hover:bg-slate-50 transition">
                       <td className="py-3 px-4 flex items-center gap-3">
-                        <img
-                          src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-                          alt={pet.name}
-                          className="w-9 h-9 rounded-lg object-cover"
-                        />
+                        {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+                          <img
+                            src={pet.imageUrl}
+                            alt={pet.name}
+                            className="w-9 h-9 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                            <PawPrint className="w-4 h-4 text-slate-300" />
+                          </div>
+                        )}
                         <div>
                           <div className="font-semibold text-slate-900">{pet.name}</div>
                           <div className="text-[10px] text-slate-400 font-mono">ID: #{pet.id}</div>
@@ -512,11 +518,18 @@ export default function MasterPage() {
             {pets.map((pet) => (
               <Card key={pet.id} className="overflow-hidden flex flex-col justify-between group hover:border-slate-300 transition">
                 <div className="relative h-44 w-full bg-slate-100">
-                  <img
-                    src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-                    alt={pet.name}
-                    className="w-full h-full object-cover group-hover:scale-102 transition duration-300"
-                  />
+                  {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+                    <img
+                      src={pet.imageUrl}
+                      alt={pet.name}
+                      className="w-full h-full object-cover group-hover:scale-102 transition duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-1 select-none">
+                      <PawPrint className="w-8 h-8 text-slate-300 stroke-[1.5]" />
+                      <span className="text-[11px] font-medium text-slate-400">No Image</span>
+                    </div>
+                  )}
                   <div className="absolute top-2.5 left-2.5 flex gap-1.5">
                     <Badge variant={getStatusVariant(pet.status)} size="sm">
                       {pet.status}

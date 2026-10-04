@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Pet, User } from '@/types';
 import { api } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
-import { Heart, Phone, Mail, User as UserIcon } from 'lucide-react';
+import { Heart, Phone, Mail, User as UserIcon, PawPrint } from 'lucide-react';
 
 interface AdoptModalProps {
   isOpen: boolean;
@@ -66,14 +66,17 @@ export const AdoptModal: React.FC<AdoptModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Pet Summary Card */}
         <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <img
-            src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-            alt={pet.name}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-            }}
-            className="w-16 h-16 rounded-xl object-cover border border-slate-200"
-          />
+          {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+            <img
+              src={pet.imageUrl}
+              alt={pet.name}
+              className="w-16 h-16 rounded-xl object-cover border border-slate-200"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+              <PawPrint className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h4 className="font-bold text-slate-900 text-sm truncate">{pet.name}</h4>
             <p className="text-xs text-emerald-700 font-medium">{pet.breed} • {pet.categoryName}</p>

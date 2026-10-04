@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Pet } from '@/types';
-import { LogIn, HeartHandshake } from 'lucide-react';
+import { LogIn, HeartHandshake, PawPrint } from 'lucide-react';
 
 interface LoginPromptModalProps {
   isOpen: boolean;
@@ -27,14 +27,18 @@ export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, pet,
     <Modal isOpen={isOpen} onClose={onClose} title="Sign In Required" maxWidth="md">
       <div className="space-y-4">
         <div className="relative h-44 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-          <img
-            src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-            alt={pet.name}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-            }}
-            className="w-full h-full object-cover"
-          />
+          {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+            <img
+              src={pet.imageUrl}
+              alt={pet.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-1 select-none pb-8">
+              <PawPrint className="w-10 h-10 text-slate-300 stroke-[1.5]" />
+              <span className="text-xs font-medium text-slate-400">No Image</span>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-4">
             <div>
               <div className="text-white font-bold text-lg">{pet.name}</div>

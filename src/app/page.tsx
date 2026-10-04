@@ -441,14 +441,18 @@ function StoreContent() {
                 >
                   {/* Image & Badges */}
                   <div className="relative h-56 sm:h-52 w-full bg-slate-100 overflow-hidden">
-                    <img
-                      src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-                      alt={pet.name}
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-                      }}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-300"
-                    />
+                    {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+                      <img
+                        src={pet.imageUrl}
+                        alt={pet.name}
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 gap-1.5 select-none">
+                        <PawPrint className="w-10 h-10 text-slate-300 stroke-[1.5]" />
+                        <span className="text-[11px] font-medium text-slate-400">No Image</span>
+                      </div>
+                    )}
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">
                       <Badge
                         variant={isAvailable ? 'emerald' : 'blue'}

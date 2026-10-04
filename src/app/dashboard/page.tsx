@@ -307,14 +307,17 @@ export default function DashboardPage() {
                     summary.recentPets.map((pet) => (
                       <tr key={pet.id} className="hover:bg-slate-50 transition">
                         <td className="py-2 px-3 flex items-center gap-2.5">
-                          <img
-                            src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'}
-                            alt={pet.name}
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-                            }}
-                            className="w-7 h-7 rounded-lg object-cover"
-                          />
+                          {pet.imageUrl && pet.imageUrl.trim() !== '' ? (
+                            <img
+                              src={pet.imageUrl}
+                              alt={pet.name}
+                              className="w-7 h-7 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                              <PawPrint className="w-3.5 h-3.5 text-slate-300" />
+                            </div>
+                          )}
                           <span className="font-semibold text-slate-900">{pet.name}</span>
                         </td>
                         <td className="py-2 px-3 text-slate-600">{pet.categoryName}</td>

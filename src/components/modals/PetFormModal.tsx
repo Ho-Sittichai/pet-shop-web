@@ -80,9 +80,8 @@ export const PetFormModal: React.FC<PetFormProps> = ({
         breed: formData.breed.trim(),
         categoryId: formData.categoryId || defaultCatId,
         age: formData.age !== undefined && formData.age !== null ? Number(formData.age) : 0,
-        price: formData.price !== undefined && formData.price !== null ? Number(formData.price) : 0,
-        healthStatus: formData.healthStatus?.trim() || 'Health Checked',
-        imageUrl: formData.imageUrl?.trim() || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80',
+        healthStatus: formData.healthStatus?.trim() || '',
+        imageUrl: formData.imageUrl?.trim() || '',
         description: formData.description?.trim() || '',
       };
 
