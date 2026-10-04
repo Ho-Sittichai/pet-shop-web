@@ -6,7 +6,6 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-
 import { useToast } from '@/context/ToastContext';
 
 interface PetFormProps {
@@ -17,6 +16,20 @@ interface PetFormProps {
   onSubmit: (data: Partial<Pet>) => Promise<void>;
 }
 
+const getBlankFormData = (defaultCategoryId: number = 1): Partial<Pet> => ({
+  name: '',
+  categoryId: defaultCategoryId,
+  breed: '',
+  age: undefined,
+  ageUnit: 'Months',
+  gender: 'Male',
+  price: undefined,
+  status: 'Available',
+  healthStatus: '',
+  imageUrl: '',
+  description: '',
+});
+
 export const PetFormModal: React.FC<PetFormProps> = ({
   isOpen,
   pet,
@@ -25,43 +38,28 @@ export const PetFormModal: React.FC<PetFormProps> = ({
   onSubmit,
 }) => {
   const { showToast } = useToast();
-  const [formData, setFormData] = useState<Partial<Pet>>({
-    name: '',
-    categoryId: categories[0]?.id || 1,
-    breed: '',
-    age: 6,
-    ageUnit: 'Months',
-    gender: 'Male',
-    price: 15000,
-    status: 'Available',
-    healthStatus: 'Vaccinated & Health Checked',
-    imageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80',
-    description: '',
-  });
+  const defaultCatId = categories[0]?.id || 1;
 
+  const [formData, setFormData] = useState<Partial<Pet>>(getBlankFormData(defaultCatId));
   const [loading, setLoading] = useState(false);
 
+  // Sync form data with current pet or reset cleanly for Add mode
   useEffect(() => {
-    if (pet) {
-      setFormData({ ...pet });
+    if (isOpen) {
+      if (pet) {
+        setFormData({ ...pet });
+      } else {
+        setFormData(getBlankFormData(categories[0]?.id || 1));
+      }
     } else {
-      setFormData({
-        name: '',
-        categoryId: categories[0]?.id || 1,
-        breed: '',
-        age: 6,
-        ageUnit: 'Months',
-        gender: 'Male',
-        price: 15000,
-        status: 'Available',
-        healthStatus: 'Vaccinated & Health Checked',
-        imageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80',
-        description: '',
-      });
+      setFormData(getBlankFormData(categories[0]?.id || 1));
     }
   }, [pet, categories, isOpen]);
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    setFormData(getBlankFormData(categories[0]?.id || 1));
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,19 +74,33 @@ export const PetFormModal: React.FC<PetFormProps> = ({
 
     setLoading(true);
     try {
-      await onSubmit(formData);
-      onClose();
+      const payload: Partial<Pet> = {
+        ...formData,
+        name: formData.name.trim(),
+        breed: formData.breed.trim(),
+        categoryId: formData.categoryId || defaultCatId,
+        age: formData.age !== undefined && formData.age !== null ? Number(formData.age) : 0,
+        price: formData.price !== undefined && formData.price !== null ? Number(formData.price) : 0,
+        healthStatus: formData.healthStatus?.trim() || 'Health Checked',
+        imageUrl: formData.imageUrl?.trim() || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80',
+        description: formData.description?.trim() || '',
+      };
+
+      await onSubmit(payload);
+      handleClose();
     } catch {
-      // master/page.tsx already shows error toast from API
+      // master/page.tsx handles toast
     } finally {
       setLoading(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={pet ? `Edit ${pet.name}` : 'Add Pet'}
       description="Enter the details below to save pet profile information"
       maxWidth="xl"
@@ -99,14 +111,14 @@ export const PetFormModal: React.FC<PetFormProps> = ({
             label="Pet Name *"
             required
             value={formData.name || ''}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             placeholder="e.g. Bella"
           />
 
           <Select
             label="Category *"
-            value={formData.categoryId || 1}
-            onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
+            value={formData.categoryId || defaultCatId}
+            onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: parseInt(e.target.value, 10) }))}
             options={categories.map((c) => ({ value: c.id, label: c.name }))}
           />
         </div>
@@ -116,14 +128,14 @@ export const PetFormModal: React.FC<PetFormProps> = ({
             label="Breed *"
             required
             value={formData.breed || ''}
-            onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, breed: e.target.value }))}
             placeholder="e.g. Golden Retriever"
           />
 
           <Select
             label="Gender"
             value={formData.gender || 'Male'}
-            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, gender: e.target.value }))}
             options={[
               { value: 'Male', label: 'Male' },
               { value: 'Female', label: 'Female' },
@@ -138,13 +150,20 @@ export const PetFormModal: React.FC<PetFormProps> = ({
               <input
                 type="number"
                 min="0"
-                value={formData.age || 0}
-                onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || 0 })}
-                className="w-2/3 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition"
+                placeholder="0"
+                value={formData.age !== undefined && formData.age !== null ? formData.age : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    age: val === '' ? undefined : Math.max(0, parseInt(val, 10) || 0),
+                  }));
+                }}
+                className="w-2/3 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition"
               />
               <select
                 value={formData.ageUnit || 'Months'}
-                onChange={(e) => setFormData({ ...formData, ageUnit: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, ageUnit: e.target.value }))}
                 className="w-1/3 px-2 py-2 bg-white border border-slate-300 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-emerald-600 transition"
               >
                 <option value="Months">Mo</option>
@@ -158,14 +177,21 @@ export const PetFormModal: React.FC<PetFormProps> = ({
             type="number"
             min="0"
             step="100"
-            value={formData.price || 0}
-            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+            placeholder="0.00"
+            value={formData.price !== undefined && formData.price !== null ? formData.price : ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFormData((prev) => ({
+                ...prev,
+                price: val === '' ? undefined : Math.max(0, parseFloat(val) || 0),
+              }));
+            }}
           />
 
           <Select
             label="Status"
             value={formData.status || 'Available'}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
             options={[
               { value: 'Available', label: 'Available' },
               { value: 'Pending', label: 'Pending' },
@@ -177,8 +203,8 @@ export const PetFormModal: React.FC<PetFormProps> = ({
         <Input
           label="Health Status"
           value={formData.healthStatus || ''}
-          onChange={(e) => setFormData({ ...formData, healthStatus: e.target.value })}
-          placeholder="e.g. Vaccinated, Dewormed"
+          onChange={(e) => setFormData((prev) => ({ ...prev, healthStatus: e.target.value }))}
+          placeholder="e.g. Vaccinated, Dewormed, Microchipped"
         />
 
         <div className="space-y-1.5">
@@ -186,19 +212,22 @@ export const PetFormModal: React.FC<PetFormProps> = ({
             label="Photo URL"
             type="url"
             value={formData.imageUrl || ''}
-            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-            placeholder="https://..."
+            onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
+            placeholder="https://images.unsplash.com/..."
           />
-          {formData.imageUrl && (
-            <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200">
-              <img
-                src={formData.imageUrl}
-                alt="Preview"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
-                }}
-                className="w-full h-full object-cover"
-              />
+          {formData.imageUrl && formData.imageUrl.trim() !== '' && (
+            <div className="flex items-center gap-3 pt-1">
+              <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80';
+                  }}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-[11px] text-slate-400">Live image preview</p>
             </div>
           )}
         </div>
@@ -208,14 +237,14 @@ export const PetFormModal: React.FC<PetFormProps> = ({
           <textarea
             rows={3}
             value={formData.description || ''}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Describe temperament and background..."
-            className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition"
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+            placeholder="Describe temperament, history, and background..."
+            className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition"
           />
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-          <Button type="button" variant="secondary" size="md" onClick={onClose}>
+          <Button type="button" variant="secondary" size="md" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" size="md" loading={loading} className="shadow-md shadow-emerald-600/30">
